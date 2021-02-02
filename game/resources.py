@@ -48,5 +48,5 @@ cred_glow = pg.image.load(os.path.join(game_folder,'resources/buttons/credits_gl
 back = pg.image.load(os.path.join(game_folder,'resources/buttons/back.png'))
 back_glow = pg.image.load(os.path.join(game_folder,'resources/buttons/back_glow.png'))
 
-songs = ['resources/music/acosta.ogg', 'resources/music/ramito.ogg']
+songs = [os.path.join(game_folder,'resources/music/acosta.ogg'), os.path.join(game_folder,'resources/music/ramito.ogg')]
 leaderboard_txt = os.path.join(game_folder,'resources/docs/leaderboard.csv')

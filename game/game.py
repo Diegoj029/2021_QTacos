@@ -9,7 +9,7 @@ from tools import *
 SCREEN_WIDTH = 900
 SCREEN_HEIGHT = 600
 FPS = 60
-TIME_LIMIT = 6000
+TIME_LIMIT = 600
 MAX_INGREDIENTS = 6
 NAME = "DEFECTO"
 CNOT_COUNT = 0
@@ -184,6 +184,8 @@ class QTaco_builder():
 class Game(object):
     def __init__(self):
         global SCORE
+        global songs
+        song = random.choice(songs)
         self.builder = QTaco_builder()
 
         #List with every game element (buttons)
@@ -202,7 +204,7 @@ class Game(object):
         self.button_list.append(Button(canasta, canasta_glow, (320, 30),(95,80),'Canasta'))
 
         #Music
-        pg.mixer.music.load(os.path.join(game_folder,song))
+        pg.mixer.music.load(song)
         pg.mixer.music.play()
 
 
@@ -211,7 +213,7 @@ class Game(object):
 
         for event in pg.event.get():
             #Quit game
-            if event.type == pg.QUIT or custom_type:
+            if event.type == pg.QUIT:
                 return True
             
             #Click on screen
@@ -286,6 +288,7 @@ class Menu():
         for event in pg.event.get():
             #Quit game
             if event.type == pg.QUIT:
+                pg.mixer.music.stop()
                 return True
             
             #Click on screen
@@ -355,6 +358,7 @@ class Menu():
                 record_score(player_name)
                 SCORE = 0
                 done = True
+        pg.mixer.music.stop()
 
 
     def leaderboard(self):
