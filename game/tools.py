@@ -1,8 +1,8 @@
 import pygame as pg
 import pandas as pd
-from resources import *
-
-SCORE = 0
+import os
+from resources import leaderboard_txt
+from game import SCORE
 
 #Basic colors
 BLACK   = (     0,  0,    0)
@@ -17,12 +17,11 @@ def message_to_screen(screen,msg,color,position,size):
     screen.blit(text,position)
 
 def record_score(player_name):
-    global score
-    score = pd.read_csv(leaderboard_txt)
+    pd_leaderboard = pd.read_csv(leaderboard_txt)
     new_score = (player_name,SCORE)
-    score.append(new_score)
-    score = score.sort_values('score')
-    score.to_csv(leaderboard_txt)
+    pd_leaderboard.append(new_score)
+    pd_leaderboard = pd_leaderboard.sort_values('score')
+    pd_leaderboard.to_csv(leaderboard_txt)
 
 class InputBox:
 

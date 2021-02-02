@@ -9,12 +9,12 @@ from tools import *
 SCREEN_WIDTH = 900
 SCREEN_HEIGHT = 600
 FPS = 60
-TIME_LIMIT = 600
+TIME_LIMIT = 100
 MAX_INGREDIENTS = 6
 NAME = "DEFECTO"
 CNOT_COUNT = 0
 CNOT_CHANNEL1 = 0
-
+SCORE = 0
 
 """
 ///////////////////////////////////////////////////////////
@@ -452,7 +452,6 @@ class Menu():
             for box in self.input_boxes:
                     box.update()
 
-            self.screen.fill((30, 30, 30))
             for box in self.input_boxes:
                 box.draw(self.screen)
                 player_name = box.text
