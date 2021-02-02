@@ -1,8 +1,9 @@
 import pygame as pg
-import random,os
+import random
 import copy
-import pandas as pd
 from qiskit import QuantumCircuit, Aer, execute
+from resources import *
+from Qtools import *
 from tools import *
 
 SCREEN_WIDTH = 900
@@ -10,66 +11,11 @@ SCREEN_HEIGHT = 600
 FPS = 60
 TIME_LIMIT = 6000
 MAX_INGREDIENTS = 6
-SCORE = 0
 NAME = "DEFECTO"
 CNOT_COUNT = 0
 CNOT_CHANNEL1 = 0
 
-#Basic colors
-BLACK   = (     0,  0,    0)
-WHITE   = (   255,255,  255)
-RED     = (   255,  0,    0)
-BLUE    = (     0,  0,  255)
 
-"""
-///////////////////////////////////////////////////////////
-    IMPORT RESOURCES
-///////////////////////////////////////////////////////////
-"""
-game_folder = os.path.dirname(os.path.abspath(__file__))
-
-game_bg = pg.image.load(os.path.join(game_folder,'resources/backgrounds/game.png'))
-main_menu_bg = pg.image.load(os.path.join(game_folder,'resources/backgrounds/main_menu.png'))
-#credits_bg = pg.image.load(os.path.join(game_folder,'resources/backgrounds/credits.png'))
-
-plate = pg.image.load(os.path.join(game_folder,'resources/images/plate.png'))
-
-tortilla = pg.image.load(os.path.join(game_folder,'resources/images/tortilla.png'))
-
-deshebrada = pg.image.load(os.path.join(game_folder,'resources/images/deshebrada.png'))
-trompo = pg.image.load(os.path.join(game_folder,'resources/images/trompo.png'))
-pastor = pg.image.load(os.path.join(game_folder,'resources/images/pastor.png'))
-cilantro = pg.image.load(os.path.join(game_folder,'resources/images/cilantro.png'))
-cebolla = pg.image.load(os.path.join(game_folder,'resources/images/cebolla.png'))
-chicken = pg.image.load(os.path.join(game_folder,'resources/images/chicken.png'))
-
-tortilla_glow = pg.image.load(os.path.join(game_folder,'resources/images/tortilla_glow.png'))
-deshebrada_glow = pg.image.load(os.path.join(game_folder,'resources/images/deshebrada_glow.png'))
-trompo_glow = pg.image.load(os.path.join(game_folder,'resources/images/trompo_glow.png'))
-cilantro_glow = pg.image.load(os.path.join(game_folder,'resources/images/cilantro_glow.png'))
-cebolla_glow = pg.image.load(os.path.join(game_folder,'resources/images/cebolla_glow.png'))
-chicken_glow = pg.image.load(os.path.join(game_folder,'resources/images/chicken_glow.png'))
-
-paper = pg.image.load(os.path.join(game_folder,'resources/images/paper.png'))
-paper_glow = pg.image.load(os.path.join(game_folder,'resources/images/paper_glow.png'))
-canasta = pg.image.load(os.path.join(game_folder,'resources/images/canasta.png'))
-canasta_glow = pg.image.load(os.path.join(game_folder,'resources/images/canasta_glow.png'))
-no_glow = pg.image.load(os.path.join(game_folder,'resources/images/no_glow.png'))
-
-play = pg.image.load(os.path.join(game_folder,'resources/buttons/play.png'))
-play_glow = pg.image.load(os.path.join(game_folder,'resources/buttons/play_glow.png'))
-leaderboard = pg.image.load(os.path.join(game_folder,'resources/buttons/leaderboard.png'))
-leaderboard_glow = pg.image.load(os.path.join(game_folder,'resources/buttons/leaderboard_glow.png'))
-howtoplay = pg.image.load(os.path.join(game_folder,'resources/buttons/howtoplay.png'))
-howtoplay_glow = pg.image.load(os.path.join(game_folder,'resources/buttons/howtoplay_glow.png'))
-options = pg.image.load(os.path.join(game_folder,'resources/buttons/options.png'))
-options_glow = pg.image.load(os.path.join(game_folder,'resources/buttons/options_glow.png'))
-cred = pg.image.load(os.path.join(game_folder,'resources/buttons/credits.png'))
-cred_glow = pg.image.load(os.path.join(game_folder,'resources/buttons/credits_glow.png'))
-back = pg.image.load(os.path.join(game_folder,'resources/buttons/back.png'))
-back_glow = pg.image.load(os.path.join(game_folder,'resources/buttons/back_glow.png'))
-
-songs = ['resources/music/acosta.ogg', 'resources/music/ramito.ogg']
 """
 ///////////////////////////////////////////////////////////
    QUANTUM ENGINE
@@ -231,111 +177,6 @@ class QTaco_builder():
 
 """
 ///////////////////////////////////////////////////////////
-   UTILITIES
-///////////////////////////////////////////////////////////
-"""
-
-#Text render method
-def message_to_screen(screen,msg,color,position,size):
-    font = pg.font.SysFont(None, size)
-    text = font.render(msg,True,color)
-    screen.blit(text,position)
-
-def record_score(player_name):
-    global score
-    score = pd.read_csv('resources/docs/leaderboard.csv')
-    new_score = (player_name,SCORE)
-    score.append(new_score)
-    score = score.sort_values('score')
-    score.to_csv('resources/docs/leaderboard.csv')
-    
-
-class InputBox:
-
-    def __init__(self, x, y, w, h, text=''):
-        self.rect = pg.Rect(x, y, w, h)
-        self.color = BLACK
-        self.COLOR_ACTIVE = BLUE
-        self.COLOR_INACTIVE = BLACK
-        self.FONT = pg.font.Font(None, 32)
-        self.text = text
-        self.txt_surface = self.FONT.render(text, True, self.color)
-        self.active = False
-
-    def handle_event(self, event):
-        if event.type == pg.MOUSEBUTTONDOWN:
-            # If the user clicked on the input_box rect.
-            if self.rect.collidepoint(event.pos):
-                # Toggle the active variable.
-                self.active = not self.active
-            else:
-                self.active = False
-            # Change the current color of the input box.
-            self.color = self.COLOR_ACTIVE if self.active else self.COLOR_INACTIVE
-        if event.type == pg.KEYDOWN:
-            if self.active:
-                if event.key == pg.K_RETURN:
-                    print(self.text)
-                    self.text = ''
-                elif event.key == pg.K_BACKSPACE:
-                    self.text = self.text[:-1]
-                else:
-                    self.text += event.unicode
-                # Re-render the text.
-                self.txt_surface = self.FONT.render(self.text, True, self.color)
-
-    def update(self):
-        # Resize the box if the text is too long.
-        width = max(200, self.txt_surface.get_width()+10)
-        self.rect.w = width
-
-    def draw(self, screen):
-        # Blit the text.
-        screen.blit(self.txt_surface, (self.rect.x+5, self.rect.y+5))
-        # Blit the rect.
-        pg.draw.rect(screen, self.color, self.rect, 2)
-
-class Button():
-    def __init__(self, image, effects, position, size, callback):
-        self.image = image
-        self.effects = effects
-        self.position = position
-        self.size = size
-        self.callback = callback
-
-        #Hitbox definition
-        self.x = position[0] + (size[0] / 6)
-        self.y = position[1] + (size[1] / 6)
-        self.width = size[0]
-        self.height = size[1]
-
-        #Effects flag
-        self.do_effects = False
-
-    def draw(self,screen):
-        #Call this method to draw the button on the screen
-        screen.blit(self.image,self.position)
-        if self.do_effects:
-            screen.blit(self.effects, self.position)
-
-
-    def isOver(self, pos):
-        #Pos is the mouse position or a tuple of (x,y) coordinates
-        if pos[0] > self.x and pos[0] < (self.x + self.width):
-            if pos[1] > self.y and pos[1] < (self.y + self.height):
-                return True
-        
-        self.do_effects = False
-        return False
-
-    def hover_effects(self):
-        self.do_effects = True
-
-    def do_action(self, builder):
-        builder.update(self.callback)
-
-"""
-///////////////////////////////////////////////////////////
    GAME ENGINE
 ///////////////////////////////////////////////////////////
 """
@@ -360,13 +201,17 @@ class Game(object):
         self.button_list.append(Button(paper, paper_glow, (10,-10),(250,120),'Paper'))
         self.button_list.append(Button(canasta, canasta_glow, (320, 30),(95,80),'Canasta'))
 
+        #Music
+        pg.mixer.music.load(os.path.join(game_folder,song))
+        pg.mixer.music.play()
+
 
     def process_events(self):
         pos = pg.mouse.get_pos()
 
         for event in pg.event.get():
             #Quit game
-            if event.type == pg.QUIT:
+            if event.type == pg.QUIT or custom_type:
                 return True
             
             #Click on screen
@@ -385,9 +230,6 @@ class Game(object):
 
 
         return False
-
-    def run_logic(self):
-        pass
 
     def display_frame(self, screen, time_bar_width):
         #Background elements
@@ -504,7 +346,6 @@ class Menu():
         global SCORE
         while not done:
             done = game.process_events()
-            game.run_logic
             game.display_frame(self.screen, time_bar_width)
             clock.tick(FPS)
             timer -= 1
@@ -524,7 +365,7 @@ class Menu():
         button_list.append(self.back_btn)
 
         while not done:
-            done = self.process_events(button_list)
+            done = self.process_events(button_list) #or back_btn_Pressed()
 
             #Display elements
             self.screen.fill(RED)
@@ -542,7 +383,7 @@ class Menu():
         button_list.append(self.back_btn)
 
         while not done:
-            done = self.process_events(button_list)
+            done = self.process_events(button_list) #or back_btn_Pressed()
 
             #Display elements
             self.screen.fill(BLUE)
@@ -560,7 +401,7 @@ class Menu():
         button_list.append(self.back_btn)
 
         while not done:
-            done = self.process_events(button_list)
+            done = self.process_events(button_list) #or back_btn_Pressed()
 
             #Display elements
             self.screen.fill(RED)
@@ -578,7 +419,7 @@ class Menu():
         button_list.append(self.back_btn)
 
         while not done:
-            done = self.process_events(button_list)
+            done = self.process_events(button_list) #or back_btn_Pressed()
 
             #Display elements
             self.screen.fill(RED)
@@ -597,7 +438,7 @@ class Menu():
         button_list.append(self.back_btn)
 
         while not done:
-            done = self.process_events(button_list)
+            done = self.process_events(button_list)# or back_btn_Pressed()
 
             #Display elements
             self.screen.fill(WHITE)
@@ -633,7 +474,8 @@ class Menu():
         elif callback == 'Credits':
             self.credits()
         elif callback == 'Back':
-            pass
+            pg.event.custom_type()
+            
 
 """
 ///////////////////////////////////////////////////////////
@@ -645,7 +487,7 @@ def main():
 
     screen = pg.display.set_mode([SCREEN_WIDTH,SCREEN_HEIGHT])
 
-    menu = Menu(screen)
+    Menu(screen)
 
     pg.quit()
 
